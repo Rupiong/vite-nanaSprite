@@ -1,0 +1,7 @@
+node_modules
+dist
+.pnpm-debug.log
+*.log
+.DS_Store
+test/.tmp-build
+playground/dist
