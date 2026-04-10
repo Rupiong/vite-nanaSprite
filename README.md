@@ -1,6 +1,6 @@
 # vite-nana-sprite
 
-Vite 插件 + `nana-sprite` 自定义元素：用背景图与 `clip-path` 展示雪碧图帧，并按元素盒子的尺寸做缩放（内部沿用 `object-fit` 的 **fill** / **contain** 算法）。可在 **Vue 3 / React / 原生 HTML** 中使用（同一套 Web Component）。
+Vite 插件 + **Vue 3 / React** 组件：用背景图与 `clip-path` 展示雪碧图帧，并按元素盒子的尺寸做缩放（内部沿用 `object-fit` 的 **fill** / **contain** 算法）。
 
 ## 配套：雪碧图生成器
 
@@ -39,7 +39,7 @@ export default defineConfig({
       sprites: [
         {
           url: './src/assets/icons.png',
-          // 多张雪碧图时必填且唯一；仅一张时可省略（等价 key 为空字符串，省略 sheet-key 时用第一张）
+          // 多张雪碧图时必填且唯一；仅一张时可省略（等价 key 为空字符串，省略 sheetKey 时用第一张）
           key: 'icons',
           items: [
             {
@@ -64,41 +64,20 @@ export default defineConfig({
 - 多张图时每一项必须带**非空且互不重复**的 `key`；仅一张图时 `key` 可省略。
 - `url` 可走 Vite 解析（相对路径、`path.resolve`、常见图片格式等）。
 
-## 注册自定义元素（必选）
-
-在应用入口（仅客户端）引入：
-
-```ts
-import 'vite-nana-sprite/register';
-// 或
-import 'vite-nana-sprite/runtime/register';
-```
-
-该模块会加载虚拟模块 `virtual:nana-sprite:manifest` 并执行 `customElements.define('nana-sprite', ...)`。
-
 ### TypeScript
 
-`vite-nana-sprite/register` 的 `types` 指向 `register-types.d.ts`，其中声明了 `virtual:nana-sprite:manifest`。若需显式引入，可在 `vite-env.d.ts` 中加入：
+Vue / React 组件会在构建时解析 `virtual:nana-sprite:manifest`。在 `vite-env.d.ts` 中可加入：
 
 ```ts
 /// <reference types="vite-nana-sprite/register-types" />
 ```
 
-## 原生 / HTML
+（`register-types` 仅提供该虚拟模块的类型声明，无需再 `import` 任何注册脚本。）
 
-```html
-<nana-sprite
-  name="copy-icon"
-  sheet-key="icons"
-  width="32px"
-  height="32px"
-></nana-sprite>
-```
-
-属性说明：
+## 组件属性（Vue / React 通用语义）
 
 - **name**：帧名称（必填）。
-- **sheet-key**：对应配置里的 `key`；省略时使用**配置中的第一张**雪碧图。
+- **sheetKey**：对应配置里的 `key`；省略时使用**配置中的第一张**雪碧图。（Vue 模板里为 `sheet-key`。）
 - **width** / **height**：可选。值为 CSS 长度（如 `32px`、`100%`）；纯数字会被当作 `px`。不传时，元素宽高使用**雪碧配置里该帧的宽高**。
 
 缩放规则（由是否传入宽高组合决定）：
@@ -109,38 +88,9 @@ import 'vite-nana-sprite/runtime/register';
 | 只传一侧 | 另一侧不传 | 已传侧用属性值，另一侧为 `auto`，并保持帧的 **aspect-ratio**（类 **contain**）。 |
 | 都传 | 都传 | 在盒子内铺满，**允许非等比拉伸**（类 **fill**）。 |
 
-元素默认 `display: block`；也可用外层 CSS 控制布局尺寸，并结合 `width`/`height` 属性使用。
+宿主为 `display: block` 的 `div`，可用外层 CSS 控制布局尺寸。
 
 ## Vue 3
-
-1. 将 `nana-sprite` 标为自定义元素（避免被当成 Vue 组件解析）：
-
-```ts
-// vite.config.ts
-import vue from '@vitejs/plugin-vue';
-
-export default defineConfig({
-  plugins: [
-    vue({
-      template: {
-        compilerOptions: {
-          isCustomElement: (tag) => tag === 'nana-sprite',
-        },
-      },
-    }),
-  ],
-});
-```
-
-2. 模板中直接使用，或使用包内薄封装：
-
-```vue
-<template>
-  <nana-sprite name="copy-icon" sheet-key="icons" width="100%" height="100%" class="icon" />
-</template>
-```
-
-或：
 
 ```vue
 <script setup lang="ts">
@@ -152,14 +102,13 @@ import NanaSprite from 'vite-nana-sprite/vue/NanaSprite.vue';
 </template>
 ```
 
-封装组件会透传 `class`、样式等其它属性到自定义元素。
+组件会将 `class`、样式等未声明属性透传到根 `div`。
 
 ## React
 
 使用 `sheetKey` 表示雪碧图 `key`。**不要**用 React 保留字 `key` 传业务含义。
 
 ```tsx
-import 'vite-nana-sprite/register';
 import { NanaSprite } from 'vite-nana-sprite/react';
 
 export function Icon() {
@@ -175,16 +124,16 @@ export function Icon() {
 }
 ```
 
-底层仍是 `<nana-sprite>`，`className` 会映射为 DOM 的 `class`。可选传入 `width` / `height`（字符串，与 DOM 属性一致）。
+可选传入 `width` / `height`（字符串，与 Vue 侧一致）。
 
 ## SSR
 
-自定义元素需要在浏览器注册；若使用 SSR，请在仅客户端运行的入口中 `import 'vite-nana-sprite/register'`，或使用动态 `import()`。
+组件依赖构建时注入的 manifest 与浏览器中的尺寸计算；若使用 SSR，请仅在客户端渲染使用到雪碧组件的树，或确保对应 chunk 仅在客户端加载。
 
 ## API
 
 - `nanaSprite(options)`：从 `vite-nana-sprite` 主入口导入（**仅含 Node 侧插件代码**，可在 `vite.config` 中安全使用）。
-- `defineNanaSprite(manifest)`、`NanaSpriteElement`：从 `vite-nana-sprite/runtime` 导入（依赖浏览器 `HTMLElement`，勿在 Node 配置文件中引用）。
+- `bindNanaSpriteHost` / `syncNanaSpriteHost`：从 `vite-nana-sprite/runtime` 导入（在已有 `HTMLElement` 上同步背景与裁剪；一般直接使用 Vue/React 封装即可）。
 
 类型导出见包内 `SpriteFrameItem`、`SpriteSheetUserConfig`、`NanaSpriteManifest` 等。
 

@@ -1,7 +1,15 @@
 {
   "name": "vite-nana-sprite",
-  "version": "0.1.0",
-  "description": "Vite plugin + nana-sprite custom element for CSS sprite sheets with proportional frame scaling",
+  "version": "0.1.1",
+  "description": "Vite plugin + Vue / React components for CSS sprite sheets with proportional frame scaling",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rupiong/vite-nanaSprite.git"
+  },
+  "homepage": "https://github.com/Rupiong/vite-nanaSprite#readme",
+  "bugs": {
+    "url": "https://github.com/Rupiong/vite-nanaSprite/issues"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -27,16 +35,6 @@
         "default": "./dist/runtime.cjs"
       }
     },
-    "./register": {
-      "types": "./register-types.d.ts",
-      "import": "./dist/register.js",
-      "require": "./dist/register.cjs"
-    },
-    "./runtime/register": {
-      "types": "./register-types.d.ts",
-      "import": "./dist/register.js",
-      "require": "./dist/register.cjs"
-    },
     "./react": {
       "import": {
         "types": "./dist/react.d.ts",
@@ -58,6 +56,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "prepare": "tsup",
     "test": "vitest run",
     "prepublishOnly": "pnpm run build",
     "playground": "pnpm run build && pnpm -C playground dev"
@@ -67,12 +66,13 @@
     "vite-plugin",
     "sprite",
     "sprite-sheet",
-    "web-components"
+    "vue",
+    "react"
   ],
   "license": "MIT",
   "peerDependencies": {
-    "vite": "^5.0.0 || ^6.0.0",
-    "react": "^18.0.0 || ^19.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "vite": "^5.0.0 || ^6.0.0"
   },
   "peerDependenciesMeta": {
     "react": {
@@ -80,16 +80,16 @@
     }
   },
   "dependencies": {
-    "image-size": "^1.1.1"
+    "image-size": "^1.2.1"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@types/react": "^19.1.0",
-    "react": "^19.1.0",
-    "tsup": "^8.4.0",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.0",
-    "vitest": "^3.1.0"
+    "@types/node": "^22.19.17",
+    "@types/react": "^19.2.14",
+    "react": "^19.2.5",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.2",
+    "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826496e7e49fded3c436dd7512d3825366d7e84d41"
 }

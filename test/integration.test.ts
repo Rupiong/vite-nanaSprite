@@ -169,4 +169,57 @@ describe('vite plugin integration', () => {
     expect(written).toMatch(/\bpositionX:\s*-311\b/);
     expect(written).toMatch(/\bpositionY:\s*-50\b/);
   });
+
+  it('parses Unicode minus (U+2212) and stray zero-width chars in px strings', async () => {
+    rmSync(tmp, { recursive: true, force: true });
+    mkdirSync(tmp, { recursive: true });
+    const spritePath = path.join(tmp, 'sprite.png');
+    writeFileSync(spritePath, tinyPng);
+    writeFileSync(
+      path.join(tmp, 'entry.js'),
+      `import m from 'virtual:nana-sprite:manifest';\nexport default m;\n`,
+    );
+
+    // 与部分雪碧图工具导出一致：typographic minus，或负号与数字之间夹零宽字符
+    const unicodeMinus = '\u2212';
+    const zwjInside = `-${'\u200b'}5496`;
+
+    await build({
+      root: tmp,
+      configFile: false,
+      logLevel: 'silent',
+      plugins: [
+        nanaSprite({
+          sprites: [
+            {
+              url: './sprite.png',
+              items: [
+                {
+                  name: 'about_avatar',
+                  width: 1,
+                  height: 1,
+                  positionX: `${unicodeMinus}5496px`,
+                  positionY: `${zwjInside}px`,
+                },
+              ],
+            },
+          ],
+        }),
+      ],
+      build: {
+        lib: {
+          entry: path.join(tmp, 'entry.js'),
+          name: 'T',
+          formats: ['es'],
+          fileName: () => 'out.js',
+        },
+        outDir: path.join(tmp, 'dist'),
+        emptyOutDir: false,
+      },
+    });
+
+    const written = readFileSync(path.join(tmp, 'dist', 'out.js'), 'utf8');
+    expect(written).toMatch(/\bpositionX:\s*-5496\b/);
+    expect(written).toMatch(/\bpositionY:\s*-5496\b/);
+  });
 });

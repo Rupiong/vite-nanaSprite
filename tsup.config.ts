@@ -4,7 +4,6 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     runtime: 'src/runtime-api.ts',
-    register: 'src/register.ts',
     react: 'src/react/NanaSprite.tsx',
   },
   format: ['esm', 'cjs'],

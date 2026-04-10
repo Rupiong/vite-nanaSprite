@@ -16,13 +16,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    vue({
-      template: {
-        compilerOptions: {
-          isCustomElement: (tag) => tag === 'nana-sprite',
-        },
-      },
-    }),
+    vue(),
     nanaSprite({
       sprites: [
         {

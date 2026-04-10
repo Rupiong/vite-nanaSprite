@@ -13,8 +13,19 @@ import type {
 export const VIRTUAL_MODULE_ID = 'virtual:nana-sprite:manifest';
 export const RESOLVED_VIRTUAL_MODULE_ID = '\0' + VIRTUAL_MODULE_ID;
 
-/** 配置项中的长度：数字、无单位字符串（默认按 px）、或带 px 的字符串；雪碧图坐标仅支持这两种写法（含负数如 -311px）。 */
+/** 配置项中的长度：数字、无单位字符串（默认按 px）、或带 px 的字符串；雪碧图坐标仅支持这两种写法（含负数如 -311px；Unicode 减号 U+2212 等在归一化后同样支持）。 */
 const PX_OR_UNITLESS = /^(-?\d+(?:\.\d+)?)\s*(px)?$/i;
+
+/** 导出工具常用 Unicode 减号/破折号；零宽与 BOM 常见于复制粘贴，会导致 `-?\\d+` 匹配失败或被其它逻辑误解析成正数。 */
+const UNICODE_MINUS_DASH = /[\u2212\u2012\u2013\u2014\uff0d]/g;
+const ZERO_WIDTH_AND_BOM = /[\ufeff\u200b-\u200d\u2060]/g;
+
+function normalizeNumericLengthString(raw: string): string {
+  return String(raw)
+    .trim()
+    .replace(ZERO_WIDTH_AND_BOM, '')
+    .replace(UNICODE_MINUS_DASH, '-');
+}
 
 function toNum(v: number | string, field: string, ctx: string): number {
   if (typeof v === 'number') {
@@ -25,7 +36,7 @@ function toNum(v: number | string, field: string, ctx: string): number {
     }
     return v;
   }
-  const s = String(v).trim();
+  const s = normalizeNumericLengthString(v);
   const m = s.match(PX_OR_UNITLESS);
   if (m) {
     const n = Number(m[1]);

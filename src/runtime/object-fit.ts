@@ -81,7 +81,11 @@ export function computeObjectFitLayout(
   };
 }
 
-/** Convert layout + sheet frame to CSS background-size (px) and background-position (px). */
+/**
+ * Background scale and sprite-only offsets (`shiftX` / `shiftY`, typically ≤ 0).
+ * Contain/cover 的留白用宿主上的子层 `left`/`top` 表达，不把 `offsetX` 混进 `background-position`，
+ * 这样与工具导出的负像素位移一致。
+ */
 export function backgroundFromLayout(
   layout: ObjectFitLayout,
   sheetW: number,
@@ -90,19 +94,22 @@ export function backgroundFromLayout(
   frameY: number,
   frameW: number,
   frameH: number,
-): { sizeW: number; sizeH: number; posX: number; posY: number } {
+): { sizeW: number; sizeH: number; shiftX: number; shiftY: number } {
+  const ax = Math.abs(frameX);
+  const ay = Math.abs(frameY);
+
   if (layout.isFill) {
     const Bw = sheetW * layout.scaleX;
     const Bh = sheetH * layout.scaleY;
-    const posX = (-frameX / sheetW) * Bw;
-    const posY = (-frameY / sheetH) * Bh;
-    return { sizeW: Bw, sizeH: Bh, posX, posY };
+    const shiftX = (-ax / sheetW) * Bw;
+    const shiftY = (-ay / sheetH) * Bh;
+    return { sizeW: Bw, sizeH: Bh, shiftX, shiftY };
   }
 
   const s = layout.uniformScale;
   const Bw = sheetW * s;
   const Bh = sheetH * s;
-  const posX = layout.offsetX - (frameX / sheetW) * Bw;
-  const posY = layout.offsetY - (frameY / sheetH) * Bh;
-  return { sizeW: Bw, sizeH: Bh, posX, posY };
+  const shiftX = (-ax / sheetW) * Bw;
+  const shiftY = (-ay / sheetH) * Bh;
+  return { sizeW: Bw, sizeH: Bh, shiftX, shiftY };
 }

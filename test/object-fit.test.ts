@@ -42,14 +42,32 @@ describe('computeObjectFitLayout', () => {
 });
 
 describe('backgroundFromLayout', () => {
-  it('maps frame for contain-like uniform scale', () => {
+  it('maps frame for contain-like uniform scale (sprite shifts only, no letterbox in value)', () => {
     const layout = computeObjectFitLayout(20, 10, 100, 50, 'contain');
     const bg = backgroundFromLayout(layout, 200, 100, 10, 5, 20, 10);
     expect(bg.sizeW).toBe(200 * layout.uniformScale);
     expect(bg.sizeH).toBe(100 * layout.uniformScale);
-    const expectedPosX = layout.offsetX - (10 / 200) * bg.sizeW;
-    const expectedPosY = layout.offsetY - (5 / 100) * bg.sizeH;
-    expect(bg.posX).toBeCloseTo(expectedPosX);
-    expect(bg.posY).toBeCloseTo(expectedPosY);
+    const expectedShiftX = -(10 / 200) * bg.sizeW;
+    const expectedShiftY = -(5 / 100) * bg.sizeH;
+    expect(bg.shiftX).toBeCloseTo(expectedShiftX);
+    expect(bg.shiftY).toBeCloseTo(expectedShiftY);
+    const combinedX = layout.offsetX + bg.shiftX;
+    const combinedY = layout.offsetY + bg.shiftY;
+    expect(combinedX).toBeCloseTo(layout.offsetX - (10 / 200) * bg.sizeW);
+    expect(combinedY).toBeCloseTo(layout.offsetY - (5 / 100) * bg.sizeH);
+  });
+
+  it('treats negative frame coords as 1:1 background-position (same scaled shift as positive atlas)', () => {
+    const layout = computeObjectFitLayout(20, 10, 100, 50, 'contain');
+    const sheetW = 200;
+    const sheetH = 100;
+    const s = layout.uniformScale;
+    const Bw = sheetW * s;
+    const atlas = backgroundFromLayout(layout, sheetW, sheetH, 5496, 36, 20, 10);
+    const cssExport = backgroundFromLayout(layout, sheetW, sheetH, -5496, -36, 20, 10);
+    expect(atlas.shiftX).toBeCloseTo(cssExport.shiftX);
+    expect(atlas.shiftY).toBeCloseTo(cssExport.shiftY);
+    expect(atlas.shiftX).toBeCloseTo(-(5496 / sheetW) * Bw);
+    expect(layout.offsetX + atlas.shiftX).toBeCloseTo(layout.offsetX + (-5496 / sheetW) * Bw);
   });
 });

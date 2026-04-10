@@ -73,7 +73,7 @@ const stageHint = computed(() => {
     <header class="header">
       <h1>vite-nana-sprite playground</h1>
       <p class="hint">
-        本地验证 <code>nana-sprite</code> 与 <code>NanaSprite</code>：<code>width</code> / <code>height</code> 可选；不传则用
+        本地验证 <code>NanaSprite</code>（Vue）：<code>width</code> / <code>height</code> 可选；不传则用
         <strong>配置中的帧宽高</strong>。只传一侧时保持
         <strong>等比</strong>（<code>aspect-ratio</code>）；两侧都传时
         <strong>铺满并允许拉伸</strong>（<code>object-fit: fill</code>）。
@@ -130,30 +130,7 @@ const stageHint = computed(() => {
 
     <section class="demo">
       <div class="panel">
-        <h2>原生 &lt;nana-sprite&gt;</h2>
-        <p class="panel-hint">{{ stageHint }}</p>
-        <div
-          class="stage"
-          :style="{
-            width: `${boxW}px`,
-            height: `${boxH}px`,
-          }"
-        >
-          <nana-sprite
-            v-bind="spriteSizeAttrs"
-            :name="frameName"
-            :sheet-key="sheetKey"
-            class="sprite"
-            :style="{
-              border: '1px dashed var(--border)',
-              backgroundColor: '#0c0c0f',
-            }"
-          />
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2>Vue 封装 &lt;NanaSprite&gt;</h2>
+        <h2>Vue &lt;NanaSprite&gt;</h2>
         <p class="panel-hint">{{ stageHint }}</p>
         <div
           class="stage"
